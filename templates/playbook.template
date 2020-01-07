@@ -1,0 +1,20 @@
+---
+#===============================================================================
+#
+#         FILE:  {{.Scriptname}}
+#
+#        USAGE:  {{.Scriptname}}
+#
+#  DESCRIPTION:  {{.Description}}
+#
+#       AUTHOR:  {{.User}} ({{.Username}}), {{.Mailaddress}}
+#
+#      CREATED:  {{.Date}}
+#
+#===============================================================================
+- name: {{.Description}}
+  hosts: all
+
+
+
+...
