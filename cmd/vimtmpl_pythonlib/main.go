@@ -106,5 +106,9 @@ func main() {
 		panic(err)
 	}
 	defer file.Close()
+	mode := os.FileMode(dialect.Mode)
+	if err := os.Chmod(scriptname, mode); err != nil {
+		log.Fatal(err)
+	}
 	return
 }
