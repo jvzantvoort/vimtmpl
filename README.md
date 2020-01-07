@@ -7,3 +7,7 @@
 Allows you to create template files for scripts.
 
 This is for goofing around... be warned
+
+## TODO
+
+add config file option
