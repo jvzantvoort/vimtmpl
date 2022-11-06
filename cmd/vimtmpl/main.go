@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jvzantvoort/vimtmpl"
 	"github.com/jvzantvoort/vimtmpl/config"
+	"github.com/jvzantvoort/vimtmpl/templates"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -42,7 +42,7 @@ func init() {
 
 func Usage() {
 
-	langs := vimtmpl.ListTemplateNames()
+	langs := templates.ListTemplateNames()
 	fmt.Printf("%s [%s] <options>\n", os.Args[0], strings.Join(langs, "|"))
 
 }
@@ -72,7 +72,7 @@ func main() {
 		}
 	}
 
-	tmplfile, err := vimtmpl.GetTemplateFile(lang)
+	tmplfile, err := templates.GetTemplateFile(lang)
 	if err != nil {
 		fmt.Printf("unable to get template for %s: %s\n\n", lang, err)
 		Usage()
@@ -116,6 +116,12 @@ func main() {
 
 	f.StringVar(&options.User, "user", cfg.User, "User account name")
 	f.StringVar(&options.User, "U", cfg.User, "User account name")
+
+	f.Usage = func() {
+		fmt.Fprintf(os.Stderr, "USAGE:\n\n\t%s %s <options>\n\nOptions:\n\n", os.Args[0], options.Lang)
+		f.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "\n\n")
+	}
 
 	f.Parse(args)
 

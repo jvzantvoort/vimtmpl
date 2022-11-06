@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"time"
@@ -50,8 +51,8 @@ func NewTemplateConfig(lang string) *TemplateConfig {
 
 	// add timestamps
 	timest := time.Now()
-	retv.Date = fmt.Sprintf("%4d-%02d-%02d", timest.Year(), timest.Month(), timest.Day()),
-	retv.Year = fmt.Sprintf("%04d", timest.Year()),
+	retv.Date = fmt.Sprintf("%4d-%02d-%02d", timest.Year(), timest.Month(), timest.Day())
+	retv.Year = fmt.Sprintf("%04d", timest.Year())
 
 	// add local parameters
 	retv.User = UserName()
