@@ -1,6 +1,7 @@
-NAME := git-ci
+NAME := vimtmpl
 VERSION := $(shell git describe --tags --abbrev=0)
 REVISION := $(shell git rev-parse --short HEAD)
+COMMANDS := vimtmpl
 LDFLAGS := -X 'main.version=$(VERSION)' \
            -X 'main.revision=$(REVISION)'
 GOIMPORTS ?= goimports
@@ -47,10 +48,10 @@ cross: main.go  ## Build binaries for cross platform.
 	@# darwin
 	@for arch in "amd64"; do \
 		GOOS=darwin GOARCH=$${arch} make build; \
-		zip pkg/git-ci_$(VERSION)_darwin_$${arch}.zip git-ci; \
+		zip pkg/vimtmpl_$(VERSION)_darwin_$${arch}.zip vimtmpl; \
 	done;
 	@# linux
 	@for arch in "amd64" "386" "arm64" "arm"; do \
 		GOOS=linux GOARCH=$${arch} make build; \
-		zip pkg/git-ci_$(VERSION)_linux_$${arch}.zip git-ci; \
+		zip pkg/vimtmpl_$(VERSION)_linux_$${arch}.zip vimtmpl; \
 	done;
