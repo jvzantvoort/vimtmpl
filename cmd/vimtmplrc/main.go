@@ -4,52 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
-	"runtime"
 	"strings"
 
-	"github.com/go-ini/ini"
+	"github.com/jvzantvoort/vimtmpl"
 )
-
-const configfilename string = ".vimtmplrc"
-
-type UserConfig struct {
-	mailaddress string
-	company     string
-}
-
-func (uc UserConfig) UserHomeDir() string {
-	if runtime.GOOS == "windows" {
-		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
-		if home == "" {
-			home = os.Getenv("USERPROFILE")
-		}
-		return home
-	}
-	return os.Getenv("HOME")
-}
-
-func (uc UserConfig) Configfile() string {
-	return filepath.Join(uc.UserHomeDir(), configfilename)
-}
-
-func (uc UserConfig) Load() map[string]string {
-	retv := make(map[string]string)
-	retv["mailaddress"] = "john@vanzantvoort.org"
-	retv["company"] = "JDC"
-	retv["license"] = "MIT"
-	retv["copyright"] = "John van Zantvoort"
-
-	cfg, err := ini.Load(uc.Configfile())
-	if err != nil {
-		fmt.Printf("Fail to read file: %v\n", err)
-		return retv
-	}
-	retv["mailaddress"] = cfg.Section("user").Key("mailaddress").String()
-	retv["company"] = cfg.Section("user").Key("company").String()
-
-	return retv
-}
 
 func Ask(question string, input string) string {
 	reader := bufio.NewReader(os.Stdin)
@@ -69,23 +27,15 @@ func Ask(question string, input string) string {
 	return text
 
 }
-
-func (uc UserConfig) Set(parameter string, value string) {
-	sectionname := "user"
-	cfg, err := ini.Load(uc.Configfile())
-	if err != nil {
-		cfg = ini.Empty()
-	}
-	if _, err := cfg.GetSection(sectionname); err != nil {
-		cfg.NewSection(sectionname)
-	}
-	cfg.Section(sectionname).Key(parameter).SetValue(value)
-	cfg.SaveTo(uc.Configfile())
-}
-
 func main() {
-	uc := UserConfig{}
+	uc := vimtmpl.UserConfig{}
 	mymap := uc.Load()
+
+	user := Ask("Account name", mymap["user"])
+	uc.Set("user", user)
+
+	username := Ask("Full user name", mymap["username"])
+	uc.Set("username", username)
 
 	mailaddress := Ask("Email", mymap["mailaddress"])
 	uc.Set("mailaddress", mailaddress)

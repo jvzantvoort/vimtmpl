@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/jvzantvoort/vimtmpl"
-	"strings"
 	"os"
+	"strings"
+
+	"github.com/jvzantvoort/vimtmpl"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,7 +26,6 @@ func init() {
 	// Only log the warning severity or above.
 	log.SetLevel(log.DebugLevel)
 }
-
 
 func main() {
 	log.Info("Start as " + templateType)

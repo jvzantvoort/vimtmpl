@@ -14,10 +14,3 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 
-vimtmplrc
-vimtmpl_bash
-vimtmpl_bashlib
-vimtmpl_go
-vimtmpl_playbook
-vimtmpl_python
-vimtmpl_pythonlib

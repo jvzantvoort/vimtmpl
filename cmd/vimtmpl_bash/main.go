@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/jvzantvoort/vimtmpl"
-	"strings"
 	"os"
+	"strings"
+
+	"github.com/jvzantvoort/vimtmpl"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -26,7 +27,6 @@ func init() {
 	log.SetLevel(log.DebugLevel)
 }
 
-
 func main() {
 	log.Info("Start as " + templateType)
 
@@ -43,6 +43,13 @@ func main() {
 	// try environment variables
 	// mailaddress = vimtmpl.GetEnv("MAILADDRESS", mailaddress)
 	// user = GetEnv("USER", user)
+	uc := vimtmpl.UserConfig{}
+	company = uc.Get("company", company)
+	copyright = uc.Get("copyright", copyright)
+	username = uc.Get("username", username)
+	user = uc.Get("user", user)
+	license = uc.Get("license", license)
+	mailaddress = uc.Get("mailaddress", mailaddress)
 
 	// try command line options
 	flags := flag.NewFlagSet("vimtmpl", flag.ExitOnError)
