@@ -104,3 +104,20 @@ func GetTemplateFile(lang string) (string, error) {
 	}
 	return "", fmt.Errorf("Language not found: %s", lang)
 }
+
+func GetTemplateContent(lang string) (string, error) {
+	target, err := GetTemplateFile(lang)
+	retv := ""
+	if err != nil {
+		return string(retv), err
+	}
+
+	content, err := ioutil.ReadFile(target)
+	retv = string(content)
+
+	if err != nil {
+		return retv, err
+	}
+	return retv, nil
+
+}
