@@ -154,6 +154,16 @@ func (tc *TemplateConfig) Load() {
 	}
 }
 
+func (tc TemplateConfig) GetItem(name string) *TemplateItem {
+	for _, obj := range tc.Items {
+		if obj.Name == name {
+			return obj
+		}
+	}
+	return &TemplateItem{Name: name}
+
+}
+
 func (tc TemplateConfig) SaveTo(filename string) error {
 
 	cfg := ini.Empty()
