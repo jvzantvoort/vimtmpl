@@ -10,19 +10,19 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type BashSubCmd struct {
+type PythonLibSubCmd struct {
 	CommonSubCmd
 }
 
-func (*BashSubCmd) Name() string {
-	return "bash"
+func (*PythonLibSubCmd) Name() string {
+	return "pythonlib"
 }
 
-func (c *BashSubCmd) Synopsis() string {
+func (c *PythonLibSubCmd) Synopsis() string {
 	return fmt.Sprintf("Create a new %s script", c.Name())
 }
 
-func (c *BashSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+func (c *PythonLibSubCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 
 	c.SubName = c.Name()
 

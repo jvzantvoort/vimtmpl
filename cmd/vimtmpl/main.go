@@ -30,8 +30,13 @@ func main() {
 	subcommands.Register(subcommands.FlagsCommand(), "")
 	subcommands.Register(subcommands.CommandsCommand(), "")
 
-	subcommands.Register(&BashSubCmd{}, "")
-	subcommands.Register(&BashLibSubCmd{}, "")
+	subcommands.Register(&ConfigSubCmd{}, "config")
+	subcommands.Register(&BashSubCmd{}, "template")
+	subcommands.Register(&BashLibSubCmd{}, "template")
+	subcommands.Register(&GoSubCmd{}, "template")
+	subcommands.Register(&PlaybookSubCmd{}, "template")
+	subcommands.Register(&PythonSubCmd{}, "template")
+	subcommands.Register(&PythonLibSubCmd{}, "template")
 
 	flag.Parse()
 	ctx := context.Background()
