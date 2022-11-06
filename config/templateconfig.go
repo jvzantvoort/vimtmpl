@@ -32,6 +32,7 @@ type TemplateConfig struct {
 	// 
 	ScriptName  string
 	Verbose     bool
+	Stdout     bool
 	Title       string
 	MailAddress string
 	Description string
@@ -50,6 +51,7 @@ func NewTemplateConfig(lang string) *TemplateConfig {
 
 	retv := &TemplateConfig{}
 	retv.Lang = lang
+	retv.Stdout = false
 
 	retv.Company = "company"
 	retv.Copyright = "copyright"
