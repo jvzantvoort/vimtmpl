@@ -25,10 +25,18 @@ type TemplateConfig struct {
 	Copyright  string
 	License    string
 	User       string
-	Username   string
+	UserName   string
 	Lang       string
 	Homedir    string
 
+	// 
+	ScriptName  string
+	Verbose     bool
+	Title       string
+	MailAddress string
+	Description string
+
+	// time strings
 	Date       string
 	Year       string
 
@@ -47,7 +55,7 @@ func NewTemplateConfig(lang string) *TemplateConfig {
 	retv.Copyright = "copyright"
 	retv.License = "license"
 	retv.MailAdress = "mailaddress"
-	retv.Username = "username"
+	retv.UserName = "username"
 
 	// add timestamps
 	timest := time.Now()
@@ -78,6 +86,9 @@ func (tc TemplateConfig) GetKeyAsString(keyname string) string {
 	}
 
 	if keyname == "description" {
+		return ""
+	}
+	if keyname == "extension" {
 		return ""
 	}
 
@@ -126,7 +137,7 @@ func (tc *TemplateConfig) Load() {
 	tc.Copyright = tc.GetKeyAsString("copyright")
 	tc.License = tc.GetKeyAsString("license")
 	tc.MailAdress = tc.GetKeyAsString("mailaddress")
-	tc.Username = tc.GetKeyAsString("username")
+	tc.UserName = tc.GetKeyAsString("username")
 	tc.User = tc.GetKeyAsString("user")
 
 	for _, indx := range tc.Object.Sections() {
@@ -148,7 +159,7 @@ func (tc TemplateConfig) SaveTo(filename string) error {
 	cfg.Section("").Key("copyright").SetValue(tc.Copyright)
 	cfg.Section("").Key("license").SetValue(tc.License)
 	cfg.Section("").Key("mailaddress").SetValue(tc.MailAdress)
-	cfg.Section("").Key("username").SetValue(tc.Username)
+	cfg.Section("").Key("username").SetValue(tc.UserName)
 	cfg.Section("").Key("user").SetValue(tc.User)
 
 	for _, obj := range tc.Items {
