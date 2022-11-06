@@ -59,5 +59,7 @@ Original version:
 
 ```shell
 mkdir -p ~/.templates.d
+pushd "~/.templates.d"
 git clone https://github.com/jvzantvoort/vimtmpl-templates.git defaults
+popd
 ```
