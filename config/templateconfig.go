@@ -3,6 +3,7 @@ package config
 import (
 	"path/filepath"
 
+	"time"
 	"github.com/go-ini/ini"
 	log "github.com/sirupsen/logrus"
 )
@@ -26,6 +27,10 @@ type TemplateConfig struct {
 	Username   string
 	Lang       string
 	Homedir    string
+
+	Date       string
+	Year       string
+
 	Object     *ini.File
 	Items      []*TemplateItem
 }
@@ -43,9 +48,14 @@ func NewTemplateConfig(lang string) *TemplateConfig {
 	retv.MailAdress = "mailaddress"
 	retv.Username = "username"
 
+	// add timestamps
+	timest := time.Now()
+	retv.Date = fmt.Sprintf("%4d-%02d-%02d", timest.Year(), timest.Month(), timest.Day()),
+	retv.Year = fmt.Sprintf("%04d", timest.Year()),
+
+	// add local parameters
 	retv.User = UserName()
 	retv.Homedir = UserHomeDir()
-
 	retv.Filepath = filepath.Join(retv.Homedir, ConfigFilename)
 
 	return retv
