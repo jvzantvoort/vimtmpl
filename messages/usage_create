@@ -1,0 +1,3 @@
+Create a new project.
+
+create [-t|-projecttype <type>] -n <name> | -projectname <name> [-v]

@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/go-ini/ini"
+	log "github.com/sirupsen/logrus"
 )
 
 const configfilename string = ".vimtmplrc"
@@ -51,28 +52,76 @@ func (uc UserConfig) Load() map[string]string {
 	return retv
 }
 
-func (uc UserConfig) Set(parameter string, value string) {
-	sectionname := "user"
+func (uc UserConfig) LoadFile() *ini.File {
 	cfg, err := ini.Load(uc.Configfile())
 	if err != nil {
+		log.Errorf("Failed to load %s", configfilename)
 		cfg = ini.Empty()
 	}
+	return cfg
+}
+
+func (uc UserConfig) GetSection(sectionname string) ini.Section {
+	data := uc.LoadFile()
+
+	if _, err := data.GetSection(sectionname); err != nil {
+		log.Errorf("Failed to load %s: %s", sectionname, err)
+		data.NewSection(sectionname)
+	}
+	sect, _ := data.GetSection(sectionname)
+	return *sect
+}
+
+func (uc UserConfig) Set(parameter string, value string) {
+	log.Debugf("Set %s: %s, start", parameter, value)
+	defer log.Debugf("Set %s: %s, end", parameter, value)
+
+	sectionname := "user"
+	cfg := uc.LoadFile()
 	if _, err := cfg.GetSection(sectionname); err != nil {
+		log.Errorf("Failed to load %s: %s", sectionname, err)
 		cfg.NewSection(sectionname)
 	}
+	log.Debugf("Set %s/%s = %s", sectionname, parameter, value)
 	cfg.Section(sectionname).Key(parameter).SetValue(value)
 	cfg.SaveTo(uc.Configfile())
 }
 
 func (uc UserConfig) Get(parameter string, defaultstr string) string {
+
+	log.Debugf("Get %s[%s], start", parameter, defaultstr)
+	defer log.Debugf("Get %s[%s], end", parameter, defaultstr)
+
 	sectionname := "user"
-	cfg, err := ini.Load(uc.Configfile())
+
+	configfilename := uc.Configfile()
+	cfg, err := ini.Load(configfilename)
 	if err != nil {
+		log.Errorf("Failed to load %s", configfilename)
 		cfg = ini.Empty()
 	}
+
+	for _, indx := range cfg.Sections() {
+		log.Debugf("%s/%s", sectionname, indx.Name())
+	}
+
 	retv := cfg.Section(sectionname).Key(parameter).String()
-	if retv != "" {
+	if retv == "" {
+		log.Errorf("Get failed for %s in %s", parameter, sectionname)
 		retv = defaultstr
 	}
+	log.Debugf("Get %s/%s = %s", sectionname, parameter, retv)
 	return retv
+}
+
+func NewUserConfig() *UserConfig {
+	log.Debugf("UserConfig, start")
+	defer log.Debugf("UserConfig, end")
+
+	retv := &UserConfig{}
+	retv.Load()
+
+	return retv
+
+
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strings"
 	"text/template"
 	"time"
 
@@ -29,6 +30,16 @@ type Dialect struct {
 	Template  string
 	Mode      int
 	Extension string
+}
+
+func (d Dialect) AddExtension(scriptname string) string {
+	retv := scriptname
+	if len(d.Extension) != 0 {
+		if !strings.HasSuffix(scriptname, d.Extension) {
+			retv = retv + d.Extension
+		}
+	}
+	return retv
 }
 
 var Box = packr.NewBox("./templates")
