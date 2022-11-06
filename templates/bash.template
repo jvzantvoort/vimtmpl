@@ -17,67 +17,46 @@
 #
 # Copyright (C) {{.Year}} {{.Copyright}}
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
 #===============================================================================
-readonly CONST_SCRIPTPATH="$(readlink -f $0)"
-readonly CONST_SCRIPTNAME="$(basename $CONST_SCRIPTPATH .sh)"
-readonly CONST_SCRIPTDIR="$(dirname $CONST_SCRIPTPATH)"
-readonly CONST_FACILITY="local0"
+C_SCRIPTPATH="$(readlink -f "$0")"
+C_SCRIPTNAME="$(basename "$C_SCRIPTPATH" .sh)"
+C_FACILITY="local0"
+
+readonly C_SCRIPTPATH
+readonly C_SCRIPTNAME
+readonly C_FACILITY
+
 declare -xr LANG="C"
 
 function logging()
 {
   local priority="$1"; shift
-  logger -p ${CONST_FACILITY}.${priority} -i -s -t "${CONST_SCRIPTNAME}" -- "${priority} $@"
+  logger -p "${C_FACILITY}.${priority}" -i -s -t "${C_SCRIPTNAME}" -- "${priority} $*"
 }
 
-function logging_err()
-{
-  logging "err" "$@"
-}
-
-function logging_info()
-{
-  logging "info" "$@"
-}
+function logging_err()   { logging "err" "$@";   }
+function logging_info()  { logging "info" "$@";  }
+function logging_warn()  { logging "warn" "$@";  }
+function logging_debug() { logging "debug" "$@"; }
 
 function script_exit()
 {
-  local STRING="$1"
-  local RETV="${2:-0}"
-  if [ "$RETV" = "0" ]
+  local string="$1"
+  local retv="${2:-0}"
+  if [ "$retv" = "0" ]
   then
-    logging_info "$STRING"
+    logging_info "$string"
   else
-    logging_err "$STRING"
+    logging_err "$string"
   fi
-  exit $RETV
+  exit "$retv"
 }
 
 function pathmunge()
 {
   [ -d "$1" ] || return
 
-  EGREP="$(which --skip-alias egrep)"
-  [[ -z "${EGREP}" ]] && script_exit "ERROR: egrep not found" 1
-
-  if echo $PATH | $EGREP -q "(^|:)$1($|:)"
+  if echo "$PATH" | grep -E -q "(^|:)$1($|:)"
   then
     return
   fi
