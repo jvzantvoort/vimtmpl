@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"time"
+
 	"github.com/go-ini/ini"
 	log "github.com/sirupsen/logrus"
 )
@@ -29,20 +30,20 @@ type TemplateConfig struct {
 	Lang       string
 	Homedir    string
 
-	// 
+	//
 	ScriptName  string
 	Verbose     bool
-	Stdout     bool
+	Stdout      bool
 	Title       string
 	MailAddress string
 	Description string
 
 	// time strings
-	Date       string
-	Year       string
+	Date string
+	Year string
 
-	Object     *ini.File
-	Items      []*TemplateItem
+	Object *ini.File
+	Items  []*TemplateItem
 }
 
 func NewTemplateConfig(lang string) *TemplateConfig {
