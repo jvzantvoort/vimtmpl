@@ -1,5 +1,5 @@
 NAME := vimtmpl
-VERSION := $(shell git describe --tags --abbrev=0)
+VERSION := $(shell git describe --tags --abbrev=0|sed 's/^.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/')
 REVISION := $(shell git rev-parse --short HEAD)
 COMMANDS := vimtmpl
 LDFLAGS := -X 'main.version=$(VERSION)' \
