@@ -12,6 +12,8 @@ const ConfigFilename string = ".template.cfg"
 type TemplateItem struct {
 	Name        string
 	Description string
+	Mode        int
+	Extension   string
 }
 
 type TemplateConfig struct {
@@ -64,9 +66,36 @@ func (tc TemplateConfig) GetKeyAsString(keyname string) string {
 		return result.String()
 	}
 
+	if keyname == "description" {
+		return ""
+	}
+
 	log.Errorf("Error: %s", err)
 	return ""
-	// return tc.Object.Section(tc.Lang).GetKey(keyname).String()
+}
+
+func (tc TemplateConfig) GetKeyAsInt(keyname string) int {
+	log.Debugf("GetKeyAsInt: %s/%s, start", tc.Lang, keyname)
+	defer log.Debugf("GetKeyAsInt: %s/%s, end", tc.Lang, keyname)
+
+	result, err := tc.Object.Section(tc.Lang).GetKey(keyname)
+	if err == nil {
+		intval, ok := result.Int()
+		if ok == nil {
+			return intval
+		}
+	}
+
+	result, err = tc.Object.Section(ini.DefaultSection).GetKey(keyname)
+	if err == nil {
+		intval, ok := result.Int()
+		if ok == nil {
+			return intval
+		}
+	}
+
+	log.Errorf("Error: %s", err)
+	return 0
 }
 
 func (tc TemplateConfig) LoadFile() *ini.File {
@@ -94,6 +123,8 @@ func (tc *TemplateConfig) Load() {
 
 		ti.Name = indx.Name()
 		ti.Description = tc.GetKeyAsString("description")
+		ti.Extension = tc.GetKeyAsString("extension")
+		ti.Mode = tc.GetKeyAsInt("mode")
 
 		tc.Items = append(tc.Items, ti)
 	}

@@ -29,3 +29,15 @@ func UserName() string {
 
 	return retv
 }
+
+// TargetExists return true if target exists
+func TargetExists(targetpath string) bool {
+	_, err := os.Stat(targetpath)
+	if err != nil {
+		return false
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
