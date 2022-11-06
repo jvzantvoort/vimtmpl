@@ -30,11 +30,11 @@ func WriteFile(tmpl *config.TemplateConfig, content string) error {
 	log.Debugf("WriteFile, start")
 	defer log.Debugf("WriteFile, end")
 
-	if config.TargetExists(tmpl.ScriptName) {
-		return fmt.Errorf("target already exists: %s", tmpl.ScriptName)
+	if config.TargetExists(tmpl.FullPath) {
+		return fmt.Errorf("target already exists: %s", tmpl.FullPath)
 	}
 
-	file, err := os.Create(tmpl.ScriptName)
+	file, err := os.Create(tmpl.FullPath)
 	defer file.Close()
 
 	obj := tmpl.GetItem(tmpl.Lang)
@@ -46,11 +46,11 @@ func WriteFile(tmpl *config.TemplateConfig, content string) error {
 		log.Errorf("file.WriteString: error: %s", err)
 		return err
 	} else {
-		log.Debugf("write file: %s", tmpl.ScriptName)
+		log.Debugf("write file: %s", tmpl.FullPath)
 	}
 
 	mode := os.FileMode(obj.Mode)
-	if err := os.Chmod(tmpl.ScriptName, mode); err != nil {
+	if err := os.Chmod(tmpl.FullPath, mode); err != nil {
 		log.Error(err)
 		return err
 	} else {
@@ -74,7 +74,9 @@ func main() {
 	}
 
 	// Setup description
-	cfg.Description = cfg.GetKeyAsString("description")
+	if len(cfg.Description) == 0 {
+		cfg.Description = cfg.GetKeyAsString("description")
+	}
 
 	// get template content
 	templatestring, _ := templates.GetTemplateContent(cfg.Lang)

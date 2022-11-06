@@ -20,22 +20,22 @@ type TemplateItem struct {
 }
 
 type TemplateConfig struct {
-	Filepath   string
-	MailAdress string
-	Company    string
-	Copyright  string
-	License    string
-	User       string
-	UserName   string
-	Lang       string
-	Homedir    string
+	Filepath    string
+	MailAddress string
+	Company     string
+	Copyright   string
+	License     string
+	User        string
+	UserName    string
+	Lang        string
+	Homedir     string
 
 	//
 	ScriptName  string
+	FullPath    string
 	Verbose     bool
 	Stdout      bool
 	Title       string
-	MailAddress string
 	Description string
 
 	// time strings
@@ -57,7 +57,7 @@ func NewTemplateConfig(lang string) *TemplateConfig {
 	retv.Company = "company"
 	retv.Copyright = "copyright"
 	retv.License = "license"
-	retv.MailAdress = "mailaddress"
+	retv.MailAddress = "mailaddress"
 	retv.UserName = "username"
 
 	// add timestamps
@@ -139,7 +139,7 @@ func (tc *TemplateConfig) Load() {
 	tc.Company = tc.GetKeyAsString("company")
 	tc.Copyright = tc.GetKeyAsString("copyright")
 	tc.License = tc.GetKeyAsString("license")
-	tc.MailAdress = tc.GetKeyAsString("mailaddress")
+	tc.MailAddress = tc.GetKeyAsString("mailaddress")
 	tc.UserName = tc.GetKeyAsString("username")
 	tc.User = tc.GetKeyAsString("user")
 
@@ -171,7 +171,7 @@ func (tc TemplateConfig) SaveTo(filename string) error {
 	cfg.Section("").Key("company").SetValue(tc.Company)
 	cfg.Section("").Key("copyright").SetValue(tc.Copyright)
 	cfg.Section("").Key("license").SetValue(tc.License)
-	cfg.Section("").Key("mailaddress").SetValue(tc.MailAdress)
+	cfg.Section("").Key("mailaddress").SetValue(tc.MailAddress)
 	cfg.Section("").Key("username").SetValue(tc.UserName)
 	cfg.Section("").Key("user").SetValue(tc.User)
 
