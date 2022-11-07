@@ -30,8 +30,21 @@ jobs:
             dep ensure
         fi
 
+    - name: Get additional tools
+      run: |
+        go install github.com/tebeka/go2xunit@master
+
     - name: Build
       run: go build -v .
 
     - name: Test
-      run: go test -v .
+      run: go test -v ./... | go2xunit > xunit.xml
+
+    - name: Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Go Tests
+        path: xunit.xml
+        reporter: java-junit
+        fail-on-error: true

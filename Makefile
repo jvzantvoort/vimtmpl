@@ -15,7 +15,9 @@ fmt: ## Formatting source codes.
 
 .PHONY: clean
 clean:
-	@rm -f $(COMMANDS) || true
+	@rm -f $(COMMANDS) || true; \
+	rm -rf pkg || true; \
+	rm -rf tags || true
 
 .PHONY: refresh
 refresh: tags
@@ -35,11 +37,17 @@ lint: ## Run golint and go vet.
 	@$(GOCILINT) run --no-config --disable-all --enable=goimports --enable=misspell ./...
 
 .PHONY: test
-test:  ## Run the tests.
+test:
 	@$(GO) test ./...
 
+.PHONY: update
+update:
+	@test -e go.mod || $(GO) mod init
+	@$(GO) mod tidy
+	@$(GO) mod vendor
+
 .PHONY: build
-build: main.go  ## Build a binary.
+build: update
 	$(foreach cmd,$(COMMANDS), $(GO) build -ldflags "$(LDFLAGS)" ./cmd/$(cmd);)
 
 .PHONY: install
