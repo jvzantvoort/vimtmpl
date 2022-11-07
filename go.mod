@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/go-ini/ini v1.67.0
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sirupsen/logrus v1.9.0
 )
 
