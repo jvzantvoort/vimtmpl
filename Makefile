@@ -42,6 +42,10 @@ test:  ## Run the tests.
 build: main.go  ## Build a binary.
 	$(foreach cmd,$(COMMANDS), $(GO) build -ldflags "$(LDFLAGS)" ./cmd/$(cmd);)
 
+.PHONY: install
+install:
+	$(GO) install ./...
+
 .PHONY: cross
 cross: main.go  ## Build binaries for cross platform.
 	mkdir -p pkg
