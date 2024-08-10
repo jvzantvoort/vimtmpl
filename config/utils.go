@@ -19,13 +19,12 @@ func UserHomeDir() string {
 }
 
 func UserName() string {
-	retv := "unknown"
 	user, err := user.Current()
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
 
-	retv = user.Username
+	retv := user.Username
 
 	return retv
 }

@@ -2,7 +2,7 @@ package templates
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -14,7 +14,7 @@ import (
 func ListTemplateFile(tmpldir string) (map[string]string, error) {
 	retv := make(map[string]string)
 
-	files, err := ioutil.ReadDir(tmpldir)
+	files, err := os.ReadDir(tmpldir)
 	if err != nil {
 		log.Fatal(err)
 		return retv, err
@@ -88,7 +88,7 @@ func ListTemplateNames() []string {
 	if err != nil {
 		return retv
 	}
-	for keyn, _ := range data {
+	for keyn := range data {
 		retv = append(retv, keyn)
 	}
 	return retv
@@ -102,7 +102,7 @@ func GetTemplateFile(lang string) (string, error) {
 	if rev, ok := data[lang]; ok {
 		return rev, nil
 	}
-	return "", fmt.Errorf("Language not found: %s", lang)
+	return "", fmt.Errorf("language not found: %s", lang)
 }
 
 func GetTemplateContent(lang string) (string, error) {
@@ -112,7 +112,7 @@ func GetTemplateContent(lang string) (string, error) {
 		return string(retv), err
 	}
 
-	content, err := ioutil.ReadFile(target)
+	content, err := os.ReadFile(target)
 	retv = string(content)
 
 	if err != nil {

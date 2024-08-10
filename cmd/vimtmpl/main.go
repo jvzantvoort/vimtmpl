@@ -34,14 +34,14 @@ func WriteFile(tmpl *config.TemplateConfig, content string) error {
 		return fmt.Errorf("target already exists: %s", tmpl.FullPath)
 	}
 
-	file, err := os.Create(tmpl.FullPath)
+	file, _ := os.Create(tmpl.FullPath)
 	defer file.Close()
 
 	obj := tmpl.GetItem(tmpl.Lang)
 	log.Debugf("language found: %s", obj.Name)
 	log.Debugf("mode: %o", obj.Mode)
 
-	_, err = file.WriteString(content)
+	_, err := file.WriteString(content)
 	if err != nil {
 		log.Errorf("file.WriteString: error: %s", err)
 		return err
@@ -65,7 +65,6 @@ func main() {
 
 	cfg, err := ArgParse(args...)
 	if err != nil {
-		fmt.Errorf("Error: %s\n", err)
 		return
 	}
 

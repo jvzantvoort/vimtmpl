@@ -25,7 +25,7 @@ func ArgParse(args ...string) (*config.TemplateConfig, error) {
 
 	if len(args) == 0 {
 		fmt.Print(Usage(""))
-		return &config.TemplateConfig{}, fmt.Errorf("Not enough arguments")
+		return &config.TemplateConfig{}, fmt.Errorf("not enough arguments")
 	}
 
 	// take first argument to lang
@@ -56,7 +56,7 @@ func ArgParse(args ...string) (*config.TemplateConfig, error) {
 	tmplfile, err := templates.GetTemplateFile(lang)
 	if err != nil {
 		Usage("")
-		return &config.TemplateConfig{}, fmt.Errorf("unable to get template for %s: %s\n\n", lang, err)
+		return &config.TemplateConfig{}, fmt.Errorf("unable to get template for %s: %s", lang, err)
 	}
 
 	log.Debugf("template: %s", tmplfile)
