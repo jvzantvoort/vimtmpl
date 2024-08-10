@@ -1,0 +1,72 @@
+#!/bin/bash
+
+APPLICATION="jvzantvoort/vimtmpl"
+
+function die() { printf "FATAL: %s\n" "$1" >&2 ; exit 1; }
+
+function get_goos() { uname -s|tr "[:upper:]" "[:lower:]"; }
+
+function get_goarch()
+{
+  case "$(uname -m)" in
+    i386)     echo "386" ;;
+    x86_64)   echo "amd64" ;;
+    armv7l)   echo "arm" ;;
+    aarch64)  echo "arm64" ;;
+    mips)     echo "mips" ;;
+    mipsel)   echo "mipsle" ;;
+    mips64)   echo "mips64" ;;
+    mips64el) echo "mips64le" ;;
+    ppc64)    echo "ppc64" ;;
+    ppc64le)  echo "ppc64le" ;;
+    s390x)    echo "s390x" ;;
+    riscv64)  echo "riscv64" ;;
+    *)        die "cannot match platform" ;;
+  esac
+}
+
+function get_download_url()
+{
+  local extension
+  local goos
+  local goarch
+  goos="$(get_goos)"
+  goarch="$(get_goarch)"
+
+  extension=".${goos}.${goarch}.tar.gz"
+
+  curl -s "${RELEASES_URL}" | \
+    awk -F'\"' -v ext="${extension}" \
+      '$2 ~ /browser_download_url/ && $4 ~ ext { print $4 }'
+}
+
+
+RELEASES_URL="https://api.github.com/repos/${APPLICATION}/releases/latest"
+URL="$(get_download_url)"
+FILENAME="$(basename "${URL}")"
+STAGING_AREA="$(mktemp -d "/tmp/${USER}-updater.XXXXX")"
+
+[[ -n "${STAGING_AREA}" ]] || die "create staging area"
+
+if [[ "$(id -u)" == "0" ]]
+then
+  BINDIR="/usr/local/bin"
+else
+  BINDIR="$(go env GOBIN)"
+fi
+
+[[ -z "${BINDIR}" ]] && BINDIR="${HOME}/bin"
+
+[[ -d "${BINDIR}" ]] || mkdir -p "${BINDIR}"
+
+curl -LSso "${STAGING_AREA}/${FILENAME}" "${URL}"
+
+pushd "${STAGING_AREA}" >/dev/null 2>&1 || die "change dir to staging area"
+tar -zxf "${FILENAME}" && rm "${FILENAME}"
+find . -type f -printf "%f\n" | while read -r target
+do
+  install -m 755 "${target}" "${BINDIR}/${target}"
+done
+popd >/dev/null 2>&1 || die "change dir back"
+
+rm -rf "${STAGING_AREA}"
