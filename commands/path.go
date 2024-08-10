@@ -95,7 +95,10 @@ func (p *Path) Import(path string) {
 	log.Debugf("%s: path=%s", log_prefix, path)
 
 	for _, dirn := range strings.Split(path, ":") {
-		p.AppendPath(dirn)
+		err := p.AppendPath(dirn)
+		if err != nil {
+			log.Errorf("Append failed: %v", err)
+		}
 	}
 }
 
@@ -131,7 +134,7 @@ func (p Path) Lookup(target string) (string, error) {
 
 	var retv string
 	var err error
-	err = fmt.Errorf("Command %s not found", target)
+	err = fmt.Errorf("command %s not found", target)
 
 	for _, dirname := range p.Directories {
 		fullpath := path.Join(dirname, target)
@@ -150,7 +153,7 @@ func (p Path) LookupMulti(targets ...string) (string, error) {
 			return result, nil
 		}
 	}
-	return "", fmt.Errorf("Targets not found")
+	return "", fmt.Errorf("targets not found")
 }
 
 func (p Path) MapGetPlatform(pathmap map[string]string) (string, error) {
@@ -190,7 +193,7 @@ func (p Path) LookupPlatform(pathmap map[string]string) (string, error) {
 	}
 	log.Errorf("%s: cannot find %s in path", log_prefix, commandname)
 
-	return "", fmt.Errorf("Target not found")
+	return "", fmt.Errorf("target not found")
 }
 
 func NewPath(pathname string) *Path {
