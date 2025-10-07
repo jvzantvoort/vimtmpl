@@ -1,3 +1,5 @@
+
+// Package config provides configuration structures and utilities for template management.
 package config
 
 import (
@@ -12,6 +14,7 @@ import (
 
 const ConfigFilename string = ".template.cfg"
 
+// TemplateItem represents a single template's metadata and file properties.
 type TemplateItem struct {
 	Name        string
 	Description string
@@ -19,6 +22,7 @@ type TemplateItem struct {
 	Extension   string
 }
 
+// TemplateConfig holds configuration and metadata for template generation and output.
 type TemplateConfig struct {
 	Filepath    string
 	MailAddress string

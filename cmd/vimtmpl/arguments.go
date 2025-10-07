@@ -1,18 +1,81 @@
+// Package main provides command-line argument parsing and usage for the vimtmpl tool.
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"path"
-	"strconv"
+
+	//	"strconv"
 	"strings"
+
+	"github.com/spf13/pflag"
 
 	"github.com/jvzantvoort/vimtmpl/config"
 	"github.com/jvzantvoort/vimtmpl/templates"
 	log "github.com/sirupsen/logrus"
 )
 
+type Config struct {
+	Company     string
+	Copyright   string
+	Description string
+	FullPath    string
+	License     string
+	MailAddress string
+	Title       string
+	UserName    string
+	User        string
+	Verbose     bool
+
+	Lang string
+}
+
+func parseFlags() *Config {
+	retv := &Config{}
+
+	pflag.StringVarP(&retv.MailAddress, "mailaddress", "m", "", "mailaddress")
+	pflag.StringVarP(&retv.Company, "company", "c", "", "Company name")
+	pflag.StringVarP(&retv.Copyright, "copyright", "C", "", "Copyright holder")
+	pflag.StringVarP(&retv.License, "license", "l", "", "License")
+	pflag.StringVarP(&retv.User, "user", "U", "", "User account name")
+	pflag.StringVarP(&retv.UserName, "username", "u", "", "Users full name")
+
+	pflag.BoolVarP(&retv.Verbose, "verbose", "v", false, "Enable verbose output")
+
+	pflag.StringVarP(&retv.FullPath, "scriptname", "s", "", "Script name")
+	pflag.StringVarP(&retv.Title, "title", "t", "", "Title (of e.g. python class)")
+	pflag.StringVarP(&retv.Description, "description", "d", "", "Script description")
+
+	pflag.Parse()
+
+	// Positional arguments
+	args := pflag.Args()
+	if len(args) < 1 {
+		fmt.Fprintln(os.Stderr, "Error: template name is a required positional argument.")
+		pflag.Usage()
+		os.Exit(1)
+	}
+
+	if len(args) < 2 {
+		fmt.Fprintln(os.Stderr, "Error: outputfile is a required positional argument.")
+		pflag.Usage()
+		os.Exit(1)
+	}
+
+	retv.Lang = args[0]
+	retv.FullPath = args[1]
+
+	if retv.FullPath == "" {
+		fmt.Fprintln(os.Stderr, "Error: --output is required.")
+		pflag.Usage()
+		os.Exit(1)
+	}
+
+	return retv
+}
+
+// Usage returns a formatted usage string for the given language
 func Usage(lang string) string {
 	if lang == "" {
 		langs := templates.ListTemplateNames()
@@ -21,128 +84,63 @@ func Usage(lang string) string {
 	return fmt.Sprintf("USAGE:\n\n\t%s %s [<filename>] <options>\n\n", os.Args[0], lang)
 }
 
-func ArgParse(args ...string) (*config.TemplateConfig, error) {
-
-	if len(args) == 0 {
-		fmt.Print(Usage(""))
-		return &config.TemplateConfig{}, fmt.Errorf("not enough arguments")
-	}
-
-	// take first argument to lang
-	lang := args[0]
-	args = args[1:]
-
-	// force the setting of verbose before handling
-	if len(args) >= 1 {
-		for _, opt := range args {
-			if opt == "-v" {
-				log.SetLevel(log.DebugLevel)
-			}
-			if opt == "--verbose" {
-				log.SetLevel(log.DebugLevel)
-			}
-		}
-	}
-
-	set1 := make(map[string]string)
-	set2 := make(map[string]string)
+// ArgParse parses command-line arguments and returns a TemplateConfig or an error.
+func ArgParse() (*config.TemplateConfig, error) {
 
 	// Start logging
 	log.Debugf("ArgParse, start")
 	defer log.Debugf("ArgParse, end")
 
-	log.Debugf("lang: %s", lang)
+	flags := parseFlags()
 
-	tmplfile, err := templates.GetTemplateFile(lang)
-	if err != nil {
-		Usage("")
-		return &config.TemplateConfig{}, fmt.Errorf("unable to get template for %s: %s", lang, err)
+	if flags.Verbose {
+		log.SetLevel(log.DebugLevel)
 	}
 
-	log.Debugf("template: %s", tmplfile)
-
-	cfg := config.NewTemplateConfig(lang)
+	cfg := config.NewTemplateConfig(flags.Lang)
 	cfg.Load()
 
-	f := flag.NewFlagSet("prompt", flag.ExitOnError)
-
-	set1["verbose"] = strconv.FormatBool(false)
-	f.BoolVar(&cfg.Verbose, "v", false, "Verbose logging")
-
-	set1["company"] = cfg.Company
-	f.StringVar(&cfg.Company, "company", cfg.Company, "Company name")
-	f.StringVar(&cfg.Company, "c", cfg.Company, "Company name")
-
-	set1["copyright"] = cfg.Copyright
-	f.StringVar(&cfg.Copyright, "copyright", cfg.Copyright, "Copyright holder")
-
-	set1["description"] = cfg.Description
-	f.StringVar(&cfg.Description, "description", "", "Script description")
-	f.StringVar(&cfg.Description, "d", "", "Script description")
-
-	set1["license"] = cfg.License
-	f.StringVar(&cfg.License, "license", cfg.License, "License")
-	f.StringVar(&cfg.License, "l", cfg.License, "License")
-
-	set1["mailaddress"] = cfg.MailAddress
-	f.StringVar(&cfg.MailAddress, "mailaddress", cfg.MailAddress, "mailaddress")
-	f.StringVar(&cfg.MailAddress, "m", cfg.MailAddress, "mailaddress")
-
-	set1["fullpath"] = cfg.FullPath
-	f.StringVar(&cfg.FullPath, "scriptname", "", "Script name")
-	f.StringVar(&cfg.FullPath, "s", "", "Script name")
-
-	set1["title"] = cfg.Title
-	f.StringVar(&cfg.Title, "title", "", "Title (of e.g. python class)")
-	f.StringVar(&cfg.Title, "t", "", "Title (of e.g. python class)")
-
-	set1["username"] = cfg.UserName
-	f.StringVar(&cfg.UserName, "username", cfg.UserName, "Users full name")
-	f.StringVar(&cfg.UserName, "u", cfg.UserName, "Users full name")
-
-	set1["user"] = cfg.User
-	f.StringVar(&cfg.User, "user", cfg.User, "User account name")
-	f.StringVar(&cfg.User, "U", cfg.User, "User account name")
-
-	f.Usage = func() {
-		fmt.Fprintf(os.Stderr, "%s", Usage(cfg.Lang))
-		f.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\n\n")
+	if flags.MailAddress != "" {
+		cfg.MailAddress = flags.MailAddress
 	}
 
-	f.Parse(args)
-
-	if len(cfg.FullPath) == 0 {
-		args := f.Args()
-		if len(args) > 0 {
-			cfg.FullPath = args[0]
-		}
+	if flags.Company != "" {
+		cfg.Company = flags.Company
 	}
 
-	if len(cfg.FullPath) == 0 {
-		cfg.Stdout = true
-		cfg.FullPath = "stdout"
-	} else {
-		cfg.ScriptName = path.Base(cfg.FullPath)
-
+	if flags.Copyright != "" {
+		cfg.Copyright = flags.Copyright
 	}
 
-	set2["company"] = cfg.Company
-	set2["copyright"] = cfg.Copyright
-	set2["description"] = cfg.Description
-	set2["license"] = cfg.License
-	set2["mailaddress"] = cfg.MailAddress
-	set2["fullpath"] = cfg.FullPath
-	set2["title"] = cfg.Title
-	set2["user"] = cfg.User
-	set2["username"] = cfg.UserName
-	set1["verbose"] = strconv.FormatBool(cfg.Verbose)
+	if flags.License != "" {
+		cfg.License = flags.License
+	}
 
-	for keyn, keyv := range set1 {
-		if keyv == set2[keyn] {
-			continue
-		}
-		log.Debugf("   changed %s from %s to %s", keyn, keyv, set2[keyn])
+	if flags.User != "" {
+		cfg.User = flags.User
+	}
+
+	if flags.UserName != "" {
+		cfg.UserName = flags.UserName
+	}
+
+	if flags.FullPath != "" {
+		cfg.FullPath = flags.FullPath
+	}
+
+	if flags.Title != "" {
+		cfg.Title = flags.Title
+	}
+
+	if flags.Description != "" {
+		cfg.Description = flags.Description
+	}
+
+	cfg.ScriptName = path.Base(cfg.FullPath)
+
+	_, err := templates.GetTemplateFile(cfg.Lang)
+	if err != nil {
+		return &config.TemplateConfig{}, fmt.Errorf("unable to get template for %s: %s", cfg.Lang, err)
 	}
 
 	return cfg, nil
