@@ -25,7 +25,7 @@ func UserHomeDir() string {
 func UserName() string {
 	user, err := user.Current()
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatalf("%s", err.Error())
 	}
 
 	retv := user.Username
