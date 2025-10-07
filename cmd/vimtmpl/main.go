@@ -1,3 +1,4 @@
+// Package main is the entry point for the vimtmpl command-line tool.
 package main
 
 import (
@@ -11,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// init configures the logger for the application.
 func init() {
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp:          true,
@@ -26,6 +28,8 @@ func init() {
 	log.SetLevel(log.InfoLevel)
 }
 
+// WriteFile writes the generated template content to a file.
+// Returns an error if the target file already exists or on write failure.
 func WriteFile(tmpl *config.TemplateConfig, content string) error {
 	log.Debugf("WriteFile, start")
 	defer log.Debugf("WriteFile, end")
@@ -44,6 +48,7 @@ func WriteFile(tmpl *config.TemplateConfig, content string) error {
 	_, err := file.WriteString(content)
 	if err != nil {
 		log.Errorf("file.WriteString: error: %s", err)
+		log.Errorf("%#v", content)
 		return err
 	} else {
 		log.Debugf("write file: %s", tmpl.FullPath)
@@ -61,11 +66,10 @@ func WriteFile(tmpl *config.TemplateConfig, content string) error {
 
 func main() {
 
-	args := os.Args[1:]
-
-	cfg, err := ArgParse(args...)
+	cfg, err := ArgParse()
 	if err != nil {
-		return
+		log.Errorf("Failed: %s", err)
+		os.Exit(1)
 	}
 
 	if cfg.Verbose {
@@ -82,7 +86,7 @@ func main() {
 	text_template, err := template.New("tmpl").Parse(templatestring)
 	if err != nil {
 		log.Error(err)
-		return
+		os.Exit(1)
 	}
 
 	buf := new(bytes.Buffer)
@@ -90,7 +94,7 @@ func main() {
 
 	if err != nil {
 		log.Error(err)
-		return
+		os.Exit(1)
 	}
 	content := buf.String()
 
@@ -104,6 +108,7 @@ func main() {
 
 	if err != nil {
 		log.Error(err)
+		os.Exit(1)
 	}
 
 }

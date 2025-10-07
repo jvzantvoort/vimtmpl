@@ -1,3 +1,5 @@
+
+// Package config provides utility functions for user and file operations.
 package config
 
 import (
@@ -7,6 +9,7 @@ import (
 	"runtime"
 )
 
+// UserHomeDir returns the home directory of the current user, handling platform differences.
 func UserHomeDir() string {
 	if runtime.GOOS == "windows" {
 		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
@@ -18,10 +21,11 @@ func UserHomeDir() string {
 	return os.Getenv("HOME")
 }
 
+// UserName returns the username of the current user.
 func UserName() string {
 	user, err := user.Current()
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatalf("%s", err.Error())
 	}
 
 	retv := user.Username
@@ -29,7 +33,7 @@ func UserName() string {
 	return retv
 }
 
-// TargetExists return true if target exists
+// TargetExists returns true if the target file or directory exists.
 func TargetExists(targetpath string) bool {
 	_, err := os.Stat(targetpath)
 	if err != nil {

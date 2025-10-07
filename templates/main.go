@@ -1,3 +1,5 @@
+
+// Package templates provides functions for listing and managing template files.
 package templates
 
 import (
@@ -11,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// ListTemplateFile returns a map of template names to their absolute file paths in the given directory.
 func ListTemplateFile(tmpldir string) (map[string]string, error) {
 	retv := make(map[string]string)
 

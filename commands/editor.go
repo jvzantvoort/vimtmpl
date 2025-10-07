@@ -1,3 +1,5 @@
+
+// Package commands provides editor integration and command execution utilities.
 package commands
 
 import (
@@ -12,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Editor object for git
+// Editor represents an editor command executor for git and other tools.
 type Editor struct {
 	Path       *Path
 	Cwd        string
@@ -20,12 +22,15 @@ type Editor struct {
 	CommandMap map[string]string
 }
 
+// Prefix returns a formatted string with the caller function name for logging.
 func (g Editor) Prefix() string {
 	pc, _, _, _ := runtime.Caller(1)
 	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
 	return fmt.Sprintf("Editor.%s", elements[len(elements)-1])
 }
 
+// Execute runs the editor command with the provided arguments.
+// Returns slices of stdout and stderr output, and an error if execution fails.
 func (g Editor) Execute(args ...string) ([]string, []string, error) {
 	log_prefix := g.Prefix()
 	log.Debugf("%s: start", log_prefix)

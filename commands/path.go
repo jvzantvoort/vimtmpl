@@ -1,4 +1,5 @@
-// PATH type handling.
+
+// Package commands provides utilities for handling and manipulating PATH-like environment variables.
 package commands
 
 import (
@@ -12,18 +13,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Path represents a PATH-like environment variable, including its type, home directory, and a list of directories.
 type Path struct {
 	Type        string
 	Home        string
 	Directories []string
 }
 
+// Prefix returns a formatted string with the caller function name and the Path type.
 func (p Path) Prefix() string {
 	pc, _, _, _ := runtime.Caller(1)
 	elements := strings.Split(runtime.FuncForPC(pc).Name(), ".")
 	return fmt.Sprintf("%s[%s]", elements[len(elements)-1], p.Type)
 }
 
+// HavePath checks if the given directory exists in the Path's Directories slice.
 func (p Path) HavePath(inputdir string) bool {
 	for _, element := range p.Directories {
 		if element == inputdir {
@@ -33,7 +37,8 @@ func (p Path) HavePath(inputdir string) bool {
 	return false
 }
 
-// AppendPath append a path to the list of Directories
+// AppendPath appends a directory to the Path's Directories slice if it is not already present.
+// It expands the input directory and checks its existence.
 func (p *Path) AppendPath(inputdir string) error {
 	log_prefix := p.Prefix()
 	log.Debugf("%s: start", log_prefix)
@@ -63,6 +68,8 @@ func (p *Path) AppendPath(inputdir string) error {
 	return nil
 }
 
+// PrependPath prepends a directory to the Path's Directories slice if it is not already present.
+// It expands the input directory.
 func (p *Path) PrependPath(inputdir string) error {
 	log_prefix := p.Prefix()
 	log.Debugf("%s: start", log_prefix)
@@ -87,6 +94,7 @@ func (p *Path) PrependPath(inputdir string) error {
 	return nil
 }
 
+// Import splits a PATH-like string and appends each directory to the Path's Directories slice.
 func (p *Path) Import(path string) {
 	log_prefix := p.Prefix()
 	log.Debugf("%s: start", log_prefix)
@@ -102,6 +110,7 @@ func (p *Path) Import(path string) {
 	}
 }
 
+// IsEmpty returns true if the Path's Directories slice is empty.
 func (p Path) IsEmpty() bool {
 	if len(p.Directories) == 0 {
 		return true
@@ -110,12 +119,13 @@ func (p Path) IsEmpty() bool {
 	}
 }
 
+// ReturnExport returns a shell export command for the Path's type and directories.
 func (p Path) ReturnExport() string {
 	return fmt.Sprintf("export %s=\"%s\"", p.Type, strings.Join(p.Directories, ":"))
 
 }
 
-// targetExists return true if target exists
+// targetExists returns true if the target path exists in the filesystem.
 func (p Path) targetExists(targetpath string) bool {
 	_, err := os.Stat(targetpath)
 	if err != nil {
@@ -127,6 +137,8 @@ func (p Path) targetExists(targetpath string) bool {
 	return true
 }
 
+// Lookup searches for the target executable in the Path's Directories.
+// Returns the full path if found, or an error if not found.
 func (p Path) Lookup(target string) (string, error) {
 	log_prefix := p.Prefix()
 	log.Debugf("%s: start", log_prefix)
@@ -147,6 +159,8 @@ func (p Path) Lookup(target string) (string, error) {
 	return retv, err
 }
 
+// LookupMulti searches for multiple target executables in the Path's Directories.
+// Returns the first found path, or an error if none are found.
 func (p Path) LookupMulti(targets ...string) (string, error) {
 	for _, target := range targets {
 		if result, err := p.Lookup(target); err != nil {
@@ -156,6 +170,8 @@ func (p Path) LookupMulti(targets ...string) (string, error) {
 	return "", fmt.Errorf("targets not found")
 }
 
+// MapGetPlatform retrieves the platform-specific command from the provided map.
+// Returns the command for the current OS or the default if available.
 func (p Path) MapGetPlatform(pathmap map[string]string) (string, error) {
 	log_prefix := p.Prefix()
 	log.Debugf("%s: start", log_prefix)
@@ -175,7 +191,7 @@ func (p Path) MapGetPlatform(pathmap map[string]string) (string, error) {
 	return "", fmt.Errorf("%s: map keys not found", log_prefix)
 }
 
-// LookupPlatform lookup paths based on platform
+// LookupPlatform looks up the platform-specific command in the Path's Directories using a map of platform commands.
 func (p Path) LookupPlatform(pathmap map[string]string) (string, error) {
 	log_prefix := p.Prefix()
 	log.Debugf("%s: start", log_prefix)
@@ -196,6 +212,8 @@ func (p Path) LookupPlatform(pathmap map[string]string) (string, error) {
 	return "", fmt.Errorf("target not found")
 }
 
+// NewPath creates a new Path instance for the given environment variable name.
+// It initializes the Path type, home directory, and imports the environment variable value.
 func NewPath(pathname string) *Path {
 	retv := &Path{}
 	retv.Type = pathname
