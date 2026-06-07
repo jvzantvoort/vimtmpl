@@ -34,6 +34,11 @@ type Config struct {
 func parseFlags() *Config {
 	retv := &Config{}
 
+	pflag.Usage = func() {
+		printHelp()
+		os.Exit(0)
+	}
+
 	pflag.StringVarP(&retv.MailAddress, "mailaddress", "m", "", "mailaddress")
 	pflag.StringVarP(&retv.Company, "company", "c", "", "Company name")
 	pflag.StringVarP(&retv.Copyright, "copyright", "C", "", "Copyright holder")
@@ -52,14 +57,14 @@ func parseFlags() *Config {
 	// Positional arguments
 	args := pflag.Args()
 	if len(args) < 1 {
-		fmt.Fprintln(os.Stderr, "Error: template name is a required positional argument.")
-		pflag.Usage()
+		fmt.Fprint(os.Stderr, Usage(""))
+		fmt.Fprintln(os.Stderr, "Error: a template name is required as the first argument.")
 		os.Exit(1)
 	}
 
 	if len(args) < 2 {
-		fmt.Fprintln(os.Stderr, "Error: outputfile is a required positional argument.")
-		pflag.Usage()
+		fmt.Fprint(os.Stderr, Usage(args[0]))
+		fmt.Fprintln(os.Stderr, "Error: an output filename is required as the second argument.")
 		os.Exit(1)
 	}
 
@@ -75,13 +80,16 @@ func parseFlags() *Config {
 	return retv
 }
 
-// Usage returns a formatted usage string for the given language
+// Usage returns a formatted usage string for the given language.
+// When lang is empty all available templates are listed, along with the named subcommands.
 func Usage(lang string) string {
 	if lang == "" {
 		langs := templates.ListTemplateNames()
 		lang = fmt.Sprintf("[%s]", strings.Join(langs, "|"))
+		return fmt.Sprintf("USAGE:\n\n\t%[1]s init\n\t%[1]s help\n\t%[1]s %[2]s <filename> <options>\n\n",
+			os.Args[0], lang)
 	}
-	return fmt.Sprintf("USAGE:\n\n\t%s %s [<filename>] <options>\n\n", os.Args[0], lang)
+	return fmt.Sprintf("USAGE:\n\n\t%s %s <filename> <options>\n\n", os.Args[0], lang)
 }
 
 // ArgParse parses command-line arguments and returns a TemplateConfig or an error.
