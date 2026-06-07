@@ -35,6 +35,7 @@ Development:
 
 Build:
     build
+    buildr
     update
     install
     package
@@ -237,6 +238,31 @@ function action_build()
   test_fatal "${exitcode}" "build results"
 }
 
+function action_buildr()
+{
+  local goos="$1"
+  local arch="$2"
+  local outdir="$3"
+  local destdir
+  local exitcode
+
+  exitcode=0
+  destdir="${outdir}/${goos}.${arch}"
+  mkdir -p "${destdir}" || die "cannot create ${destdir}"
+
+  while read -r target
+  do
+    CGO_ENABLED=0 \
+    GOOS=${goos} GOARCH=${arch} \
+      go build -ldflags "${LDFLAGS}" \
+      -o "${destdir}/${target}" "./cmd/${target}"
+    retv="$?"
+    test_result "$retv" "    ${target}"
+    [[ "${retv}" == "0" ]] || exitcode=$((exitcode+1))
+  done < <(list_binaries)
+  test_fatal "${exitcode}" "build results"
+}
+
 function action_dependencies()
 {
   local msg
@@ -383,6 +409,19 @@ function do_build()
   action_dependencies
   action_build "$(go env GOOS)" "$(go env GOARCH)"
 }
+function do_buildr()
+{
+  local goos="$2"
+  local arch="$3"
+  local outdir="$4"
+
+  [[ -n "${goos}" ]] || die "missing goos"
+  [[ -n "${arch}" ]] || die "missing arch"
+  [[ -n "${outdir}" ]] || die "missing output directory"
+
+  print_title "build ${goos}/${arch}"
+  action_buildr "${goos}" "${arch}" "${outdir}"
+}
 function do_install() {
   print_title "install locally"
   action_install "$(go env GOOS)" "$(go env GOARCH)"
@@ -407,6 +446,7 @@ case "$1" in
   fmt)     do_fmt          ;;
   tags)    do_tags         ;;
   build)   do_build        ;;
+  buildr)  do_buildr "$@"  ;;
   update)  do_dependencies ;;
   install) do_install      ;;
   package) do_package      ;;
