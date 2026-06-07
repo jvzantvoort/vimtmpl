@@ -1,0 +1,43 @@
+name: Dependency Update
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Weekly on Monday
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Update Go dependencies
+        run: |
+          go get -u ./...
+          go mod tidy
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update Go dependencies'
+          title: 'chore: update Go dependencies'
+          body: |
+            Automated dependency update
+            
+            - Updates all Go dependencies to their latest versions
+            - Runs `go get -u ./...` and `go mod tidy`
+          branch: deps/go-dependencies
+          delete-branch: true
+          labels: dependencies
