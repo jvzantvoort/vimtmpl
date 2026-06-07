@@ -66,6 +66,19 @@ func WriteFile(tmpl *config.TemplateConfig, content string) error {
 
 func main() {
 
+	if len(os.Args) >= 2 && os.Args[1] == "help" {
+		printHelp()
+		return
+	}
+
+	if len(os.Args) >= 2 && os.Args[1] == "init" {
+		if err := runInit(); err != nil {
+			log.Errorf("init failed: %s", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	cfg, err := ArgParse()
 	if err != nil {
 		log.Errorf("Failed: %s", err)
