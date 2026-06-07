@@ -2,7 +2,7 @@ name: Lint
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
 
 permissions:
@@ -26,8 +26,7 @@ jobs:
         uses: golangci/golangci-lint-action@v9
         with:
           version: latest
-          args: --timeout=5m --issues-exit-code=0
-        continue-on-error: true
+          args: --timeout=5m
 
   markdown-lint:
     name: markdown-lint
@@ -40,4 +39,3 @@ jobs:
         uses: DavidAnson/markdownlint-cli2-action@v23
         with:
           globs: '**/*.md'
-        continue-on-error: true
