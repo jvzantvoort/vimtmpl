@@ -1,4 +1,12 @@
-#!/bin/bash
+---
+[switches]
+safe = Enable safety switches
+header = Add basic header
+pathmunge = enable pathmunge function
+staging = enable staging function
+---
+#!/bin/bash {{ if index .Flags "safe" }} -eu {{ end }}
+{{ if .Enabled "header" }}
 #===============================================================================
 #
 #         FILE:  {{.ScriptName}}
@@ -18,40 +26,17 @@
 # Copyright (C) {{.Year}} {{.Copyright}}
 #
 #===============================================================================
+{{ end }}
 C_SCRIPTPATH="$(readlink -f "$0")"
 C_SCRIPTNAME="$(basename "$C_SCRIPTPATH" .sh)"
-C_FACILITY="local0"
 
 readonly C_SCRIPTPATH
 readonly C_SCRIPTNAME
-readonly C_FACILITY
 
-declare -xr LANG="C"
 
-function logging()
-{
-  local priority="$1"; shift
-  logger -p "${C_FACILITY}.${priority}" -i -s -t "${C_SCRIPTNAME}" -- "${priority} $*"
-}
+die() { printf "FATAL: %s\n", "$1"; exit 1; }
 
-function logging_err()   { logging "err" "$@";   }
-function logging_info()  { logging "info" "$@";  }
-function logging_warn()  { logging "warn" "$@";  }
-function logging_debug() { logging "debug" "$@"; }
-
-function script_exit()
-{
-  local string="$1"
-  local retv="${2:-0}"
-  if [ "$retv" = "0" ]
-  then
-    logging_info "$string"
-  else
-    logging_err "$string"
-  fi
-  exit "$retv"
-}
-
+{{ if .Enabled "pathmunge" }}
 function pathmunge()
 {
   [ -d "$1" ] || return
@@ -68,20 +53,23 @@ function pathmunge()
       PATH=$1:$PATH
   fi
 }
+{{ end }}
+
+{{ if .Enabled "staging" }}
+mkstaging_area()
+{
+  STAGING_AREA="$(mktemp -d /tmp/{{.ScriptName}}.XXXXXX)"
+  return "$?"
+}
+{{ end }}
 
 #------------------------------------------------------------------------------#
 #                                    Main                                      #
 #------------------------------------------------------------------------------#
+{{ if .Enabled "staging" }}
+mkstaging_area
+{{ end }}
 
-logging_info "start"
-
-# setup path
-#---------------------------------------
-pathmunge "${HOME}/bin" "after"
-export PATH
-
-
-script_exit "end"
 #------------------------------------------------------------------------------#
 #                                  The End                                     #
 #------------------------------------------------------------------------------#

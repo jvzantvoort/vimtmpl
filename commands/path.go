@@ -1,4 +1,3 @@
-
 // Package commands provides utilities for handling and manipulating PATH-like environment variables.
 package commands
 

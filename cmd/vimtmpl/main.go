@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"slices"
 	"text/template"
 
 	"github.com/jvzantvoort/vimtmpl/config"
@@ -98,7 +99,29 @@ func main() {
 	}
 
 	// get template content
-	templatestring, _ := templates.GetTemplateContent(cfg.Lang)
+	tmplcfg, templatestring, err := templates.ParseLang(cfg.Lang)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	if cfg.Info {
+		sections := []string{}
+		sections = append(sections, tmplcfg.SectionStrings()...)
+		if slices.Contains(sections, "switches") {
+			fmt.Println("Template switches:")
+			sec, err := tmplcfg.GetSection("switches")
+			if err != nil {
+				fmt.Printf("CRAP\n")
+			}
+			for name, description := range sec.KeysHash() {
+				fmt.Printf("%-15s %s\n", name, description)
+			}
+		}
+		os.Exit(0)
+	}
+
+	// templatestring, _ := templates.GetTemplateContent(cfg.Lang)
 	text_template, err := template.New("tmpl").Parse(templatestring)
 	if err != nil {
 		log.Error(err)

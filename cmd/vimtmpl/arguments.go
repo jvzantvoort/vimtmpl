@@ -26,9 +26,10 @@ type Config struct {
 	Title       string
 	UserName    string
 	User        string
+	Info        bool
 	Verbose     bool
-
-	Lang string
+	Flags       []string
+	Lang        string
 }
 
 func parseFlags() *Config {
@@ -47,10 +48,14 @@ func parseFlags() *Config {
 	pflag.StringVarP(&retv.UserName, "username", "u", "", "Users full name")
 
 	pflag.BoolVarP(&retv.Verbose, "verbose", "v", false, "Enable verbose output")
+	pflag.BoolVarP(&retv.Info, "info", "i", false, "Print Information about the template")
 
 	pflag.StringVarP(&retv.FullPath, "scriptname", "s", "", "Script name")
 	pflag.StringVarP(&retv.Title, "title", "t", "", "Title (of e.g. python class)")
 	pflag.StringVarP(&retv.Description, "description", "d", "", "Script description")
+
+	// pflag.StringToStringVarP(&retv.Flags, "flags", "f", nil, "Custom template switchesi as key=value pairs")
+	pflag.StringArrayVarP(&retv.Flags, "flags", "f", nil, "Custom template switchesi as key=value pairs")
 
 	pflag.Parse()
 
@@ -108,6 +113,8 @@ func ArgParse() (*config.TemplateConfig, error) {
 	cfg := config.NewTemplateConfig(flags.Lang)
 	cfg.Load()
 
+	cfg.Info = flags.Info
+
 	if flags.MailAddress != "" {
 		cfg.MailAddress = flags.MailAddress
 	}
@@ -142,6 +149,20 @@ func ArgParse() (*config.TemplateConfig, error) {
 
 	if flags.Description != "" {
 		cfg.Description = flags.Description
+	}
+
+	// switches := make(map[string]bool)
+
+	for _, indx := range flags.Flags {
+		if strings.Contains(indx, ",") {
+			for _, sindx := range strings.Split(indx, ",") {
+				cfg.Flags[sindx] = true
+
+			}
+
+		} else {
+			cfg.Flags[indx] = true
+		}
 	}
 
 	cfg.ScriptName = path.Base(cfg.FullPath)
