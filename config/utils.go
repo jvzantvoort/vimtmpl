@@ -1,4 +1,3 @@
-
 // Package config provides utility functions for user and file operations.
 package config
 

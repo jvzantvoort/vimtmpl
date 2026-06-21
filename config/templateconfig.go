@@ -1,4 +1,3 @@
-
 // Package config provides configuration structures and utilities for template management.
 package config
 
@@ -46,6 +45,9 @@ type TemplateConfig struct {
 	Date string
 	Year string
 
+	Flags map[string]bool
+
+	Info   bool
 	Object *ini.File
 	Items  []*TemplateItem
 }
@@ -74,8 +76,19 @@ func NewTemplateConfig(lang string) *TemplateConfig {
 	retv.Homedir = UserHomeDir()
 	retv.Filepath = filepath.Join(retv.Homedir, ConfigFilename)
 
+	retv.Flags = make(map[string]bool)
+
 	return retv
 
+}
+
+func (tc TemplateConfig) Enabled(key string) bool {
+	val, exists := tc.Flags[key]
+	if !exists {
+		return false
+	}
+
+	return val
 }
 
 func (tc TemplateConfig) GetKeyAsString(keyname string) string {

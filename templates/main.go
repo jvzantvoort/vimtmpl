@@ -1,4 +1,3 @@
-
 // Package templates provides functions for listing and managing template files.
 package templates
 
@@ -7,8 +6,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/jvzantvoort/vimtmpl/config"
+	"gopkg.in/ini.v1"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -108,6 +109,76 @@ func GetTemplateFile(lang string) (string, error) {
 	return "", fmt.Errorf("language not found: %s", lang)
 }
 
+func ParseLang(lang string) (*ini.File, string, error) {
+
+	const marker = "---\n"
+
+	// load file
+	// -------------------------------------
+	target, err := GetTemplateFile(lang)
+	if err != nil {
+		return ini.Empty(), "", err
+	}
+
+	contentb, err := os.ReadFile(target)
+	if err != nil {
+		return ini.Empty(), "", err
+	}
+	content := string(contentb)
+	// -------------------------------------
+
+	if !strings.HasPrefix(content, marker) {
+		return ini.Empty(), content, nil
+	}
+
+	// Add header config
+	// -------------------------------------
+	rest := content[len(marker):]
+
+	idx := strings.Index(rest, marker)
+	if idx == -1 {
+		// Opening marker exists but no closing marker.
+		return ini.Empty(), content, nil
+	}
+
+	headerBlob := rest[:idx]
+	body := rest[idx+len(marker):]
+
+	header, err := ini.LoadSources(
+		ini.LoadOptions{
+			IgnoreInlineComment: true,
+		},
+		[]byte(headerBlob),
+	)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return header, body, nil
+
+}
+
+func splitDocument(content string) (header string, body string) {
+	const marker = "---\n"
+
+	if !strings.HasPrefix(content, marker) {
+		return "", content
+	}
+
+	rest := content[len(marker):]
+
+	idx := strings.Index(rest, marker)
+	if idx == -1 {
+		// Opening marker exists but no closing marker.
+		return "", content
+	}
+
+	header = rest[:idx]
+	body = rest[idx+len(marker):]
+
+	return header, body
+}
+
 func GetTemplateContent(lang string) (string, error) {
 	target, err := GetTemplateFile(lang)
 	retv := ""
@@ -116,7 +187,24 @@ func GetTemplateContent(lang string) (string, error) {
 	}
 
 	content, err := os.ReadFile(target)
-	retv = string(content)
+	_, retv = splitDocument(string(content))
+
+	if err != nil {
+		return retv, err
+	}
+	return retv, nil
+
+}
+
+func GetTemplateConfig(lang string) (string, error) {
+	target, err := GetTemplateFile(lang)
+	retv := ""
+	if err != nil {
+		return string(retv), err
+	}
+
+	content, err := os.ReadFile(target)
+	retv, _ = splitDocument(string(content))
 
 	if err != nil {
 		return retv, err

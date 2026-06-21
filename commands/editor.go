@@ -1,4 +1,3 @@
-
 // Package commands provides editor integration and command execution utilities.
 package commands
 

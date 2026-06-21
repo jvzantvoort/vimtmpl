@@ -1,4 +1,3 @@
-
 // Package commands provides utility functions for command execution and application control.
 package commands
 
