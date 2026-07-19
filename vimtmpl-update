@@ -1,6 +1,7 @@
 #!/bin/bash
 
 APPLICATION="jvzantvoort/vimtmpl"
+RELEASES_URL="https://api.github.com/repos/${APPLICATION}/releases/latest"
 
 function die() { printf "FATAL: %s\n" "$1" >&2 ; exit 1; }
 
@@ -37,11 +38,10 @@ function get_download_url()
 
   curl -s "${RELEASES_URL}" | \
     awk -F'\"' -v ext="${extension}" \
-      '$2 ~ /browser_download_url/ && $4 ~ ext { print $4 }'
+      '$2 ~ /browser_download_url/ && $4 ~ ext { print $4 }' | \
+    grep -E ".tar.gz$"
 }
 
-
-RELEASES_URL="https://api.github.com/repos/${APPLICATION}/releases/latest"
 URL="$(get_download_url)"
 FILENAME="$(basename "${URL}")"
 STAGING_AREA="$(mktemp -d "/tmp/${USER}-updater.XXXXX")"
@@ -52,7 +52,7 @@ if [[ "$(id -u)" == "0" ]]
 then
   BINDIR="/usr/local/bin"
 else
-  BINDIR="$(go env GOBIN)"
+  BINDIR="$(go env GOBIN 2>/dev/null)"
 fi
 
 [[ -z "${BINDIR}" ]] && BINDIR="${HOME}/bin"
