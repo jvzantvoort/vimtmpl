@@ -2,13 +2,12 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"slices"
-	"text/template"
 
 	"github.com/jvzantvoort/vimtmpl/config"
+	"github.com/jvzantvoort/vimtmpl/generate"
 	"github.com/jvzantvoort/vimtmpl/templates"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,40 +31,7 @@ func init() {
 // WriteFile writes the generated template content to a file.
 // Returns an error if the target file already exists or on write failure.
 func WriteFile(tmpl *config.TemplateConfig, content string) error {
-	log.Debugf("WriteFile, start")
-	defer log.Debugf("WriteFile, end")
-
-	if config.TargetExists(tmpl.FullPath) {
-		return fmt.Errorf("target already exists: %s", tmpl.FullPath)
-	}
-
-	file, err := os.Create(tmpl.FullPath)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = file.Close() }()
-
-	obj := tmpl.GetItem(tmpl.Lang)
-	log.Debugf("language found: %s", obj.Name)
-	log.Debugf("mode: %o", obj.Mode)
-
-	_, err = file.WriteString(content)
-	if err != nil {
-		log.Errorf("file.WriteString: error: %s", err)
-		log.Errorf("%#v", content)
-		return err
-	} else {
-		log.Debugf("write file: %s", tmpl.FullPath)
-	}
-
-	mode := os.FileMode(obj.Mode)
-	if err := os.Chmod(tmpl.FullPath, mode); err != nil {
-		log.Error(err)
-		return err
-	} else {
-		log.Debugf("mode: %d\n", obj.Mode)
-	}
-	return nil
+	return generate.WriteFile(tmpl, content)
 }
 
 func main() {
@@ -98,8 +64,8 @@ func main() {
 		cfg.Description = cfg.GetKeyAsString("description")
 	}
 
-	// get template content
-	tmplcfg, templatestring, err := templates.ParseLang(cfg.Lang)
+	// get template header (used for --info)
+	tmplcfg, _, err := templates.ParseLang(cfg.Lang)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
@@ -121,21 +87,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	// templatestring, _ := templates.GetTemplateContent(cfg.Lang)
-	text_template, err := template.New("tmpl").Parse(templatestring)
+	content, err := generate.Render(cfg)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
 	}
-
-	buf := new(bytes.Buffer)
-	err = text_template.Execute(buf, *cfg)
-
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-	content := buf.String()
 
 	// Print to stdout if needed
 	if cfg.Stdout {
