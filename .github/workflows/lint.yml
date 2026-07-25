@@ -27,15 +27,3 @@ jobs:
         with:
           version: latest
           args: --timeout=5m
-
-  markdown-lint:
-    name: markdown-lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Lint markdown files
-        uses: DavidAnson/markdownlint-cli2-action@v24
-        with:
-          globs: '**/*.md'

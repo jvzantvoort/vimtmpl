@@ -253,7 +253,7 @@ func (m model) View() string {
 	if len(m.langs) == 0 {
 		b.WriteString(dimStyle.Render(`(none found - run "vimtmpl init" first)`))
 	} else {
-		b.WriteString(fmt.Sprintf("<  %s  >", selectedStyle.Render(m.langs[m.langIdx])))
+		fmt.Fprintf(&b, "<  %s  >", selectedStyle.Render(m.langs[m.langIdx]))
 	}
 	b.WriteString("\n\n")
 
