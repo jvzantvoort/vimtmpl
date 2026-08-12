@@ -106,4 +106,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := generate.OpenEditor(cfg.FullPath); err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
 }

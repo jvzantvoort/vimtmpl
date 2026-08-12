@@ -84,8 +84,8 @@ func TestModelGenerateWritesFile(t *testing.T) {
 	if !ok {
 		t.Fatalf("generate() did not return a model")
 	}
-	if cmd != nil {
-		t.Errorf("expected no tea.Cmd from generate(), got one")
+	if cmd == nil {
+		t.Errorf("expected a tea.Cmd from generate() to open the editor, got nil")
 	}
 	if got.status.isErr {
 		t.Fatalf("expected success status, got error: %s", got.status.text)

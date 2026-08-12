@@ -21,6 +21,9 @@ DESCRIPTION
     "vimtmpl init" once to install the bundled default templates and
     create a skeleton ~/.template.cfg.
 
+    After writing the file, vimtmplx suspends the UI and opens it in an
+    editor: $EDITOR if set, otherwise vim.
+
 OPTIONS
     -c, --cwd <dir>
             Directory to start from (default: current working directory).

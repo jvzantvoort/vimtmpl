@@ -36,6 +36,13 @@ type statusMsg struct {
 	isErr bool
 }
 
+// editorFinishedMsg reports the outcome of running the external editor
+// spawned after a successful write.
+type editorFinishedMsg struct {
+	path string
+	err  error
+}
+
 type model struct {
 	filename textinput.Model
 
@@ -156,6 +163,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+
+	case editorFinishedMsg:
+		if msg.err != nil {
+			m.status = statusMsg{text: fmt.Sprintf("editor exited with error: %s", msg.err), isErr: true}
+		} else {
+			m.status = statusMsg{text: fmt.Sprintf("wrote %s", msg.path)}
+		}
+		return m, nil
 	}
 
 	return m, nil
@@ -227,8 +242,11 @@ func (m model) generate() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	m.status = statusMsg{text: fmt.Sprintf("wrote %s", fullPath)}
-	return m, nil
+	m.status = statusMsg{text: fmt.Sprintf("wrote %s, opening editor...", fullPath)}
+	editorCmd := generate.EditorCommand(fullPath)
+	return m, tea.ExecProcess(editorCmd, func(err error) tea.Msg {
+		return editorFinishedMsg{path: fullPath, err: err}
+	})
 }
 
 func (m model) View() string {
