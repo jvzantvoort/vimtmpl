@@ -18,7 +18,7 @@ var (
 
 	okStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
 	errStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("203"))
-	helpStyle = dimStyle
+	helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("84"))
 )
 
 // fieldLabel renders a field name, highlighting it when focused.
