@@ -19,6 +19,10 @@ func runSelfAsSubprocess(t *testing.T, home string, args []string) (string, erro
 		"VIMTMPL_BE_MAIN=1",
 		"VIMTMPL_MAIN_ARGS="+strings.Join(args, "\x1f"),
 		"HOME="+home,
+		// Avoid launching a real interactive editor: main() opens $EDITOR
+		// on the generated file, which would otherwise wait on a terminal
+		// that doesn't exist in this test process.
+		"EDITOR=true",
 	)
 
 	out, err := cmd.CombinedOutput()

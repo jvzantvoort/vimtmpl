@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -35,6 +36,35 @@ type statusMsg struct {
 	text  string
 	isErr bool
 }
+
+// editorFinishedMsg reports the outcome of trying to replace this process
+// with the external editor after a successful write. err is only non-nil
+// when the replacement itself couldn't happen (e.g. unsupported on
+// Windows) — on success the process is gone and this is never sent.
+type editorFinishedMsg struct {
+	path string
+	err  error
+}
+
+// editorFallbackFinishedMsg reports the outcome of running the editor as an
+// ordinary child process, used when process replacement isn't available.
+type editorFallbackFinishedMsg struct {
+	path string
+	err  error
+}
+
+// execReplaceCommand adapts generate.ExecEditor to bubbletea's ExecCommand
+// interface so tea.Exec can run it. Since ExecEditor replaces the process
+// outright, the terminal streams bubbletea would otherwise wire up are
+// irrelevant — the new process inherits the real fds directly.
+type execReplaceCommand struct {
+	path string
+}
+
+func (c execReplaceCommand) Run() error          { return generate.ExecEditor(c.path) }
+func (c execReplaceCommand) SetStdin(io.Reader)  {}
+func (c execReplaceCommand) SetStdout(io.Writer) {}
+func (c execReplaceCommand) SetStderr(io.Writer) {}
 
 type model struct {
 	filename textinput.Model
@@ -156,6 +186,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+
+	case editorFinishedMsg:
+		// Process replacement failed to even start (e.g. unsupported on
+		// this platform) — fall back to running the editor as a child
+		// process and resuming the UI afterward.
+		m.status = statusMsg{text: fmt.Sprintf("opening editor via exec failed (%s), falling back...", msg.err)}
+		editorCmd := generate.EditorCommand(msg.path)
+		return m, tea.ExecProcess(editorCmd, func(err error) tea.Msg {
+			return editorFallbackFinishedMsg{path: msg.path, err: err}
+		})
+
+	case editorFallbackFinishedMsg:
+		if msg.err != nil {
+			m.status = statusMsg{text: fmt.Sprintf("editor exited with error: %s", msg.err), isErr: true}
+		} else {
+			m.status = statusMsg{text: fmt.Sprintf("wrote %s", msg.path)}
+		}
+		return m, nil
 	}
 
 	return m, nil
@@ -227,8 +275,10 @@ func (m model) generate() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	m.status = statusMsg{text: fmt.Sprintf("wrote %s", fullPath)}
-	return m, nil
+	m.status = statusMsg{text: fmt.Sprintf("wrote %s, opening editor...", fullPath)}
+	return m, tea.Exec(execReplaceCommand{path: fullPath}, func(err error) tea.Msg {
+		return editorFinishedMsg{path: fullPath, err: err}
+	})
 }
 
 func (m model) View() string {

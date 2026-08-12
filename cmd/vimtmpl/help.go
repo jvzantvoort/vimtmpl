@@ -27,6 +27,9 @@ DESCRIPTION
     Run "%[1]s init" once to install the bundled default templates and
     create a skeleton configuration file.
 
+    After writing the file, %[1]s opens it in an editor: $EDITOR if set,
+    otherwise vim.
+
 SUBCOMMANDS
     init    Create ~/.templates.d/{default,local}/ and install the bundled
             default templates into the default directory. Also writes a

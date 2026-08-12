@@ -1,9 +1,17 @@
-## [unreleased]
+## [imtmpl-2.0.0] - 2026-07-25
+
+### 🚀 Features
+
+- Updated vimtmplx
+- Minor fixes
+
+## [imtmpl-1.3.0] - 2026-07-19
 
 ### 🚀 Features
 
 - Update update script
 - Update build script
+- Add git-cliff
 
 
 ### ⚙️ Miscellaneous Tasks
