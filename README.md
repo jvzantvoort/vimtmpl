@@ -52,6 +52,7 @@ curl -fsSLO https://raw.githubusercontent.com/jvzantvoort/vimtmpl/master/vimtmpl
 chmod +x vimtmpl-update
 ./vimtmpl-update
 ```
+![download vimtmpl](docs/images/download.gif)
 
 Re-run it any time to update to the latest release.
 
@@ -71,7 +72,14 @@ See [Development](#development) for the rest of `build.sh`'s subcommands.
 ## Quick start
 
 ```shell
-vimtmpl init                                                       # install default templates + skeleton config
+vimtmpl init # install default templates + skeleton config
+```
+
+![init vimtmpl](docs/images/init.gif)
+
+**Note**: Update the ``~/.template.cfg`` file.
+
+```shell
 vimtmpl bash ~/bin/deploy.sh -d "Deploy application to production" # generate, then open in $EDITOR
 ```
 
@@ -80,6 +88,8 @@ or interactively:
 ```shell
 vimtmplx
 ```
+
+![create bash](docs/images/bash.gif)
 
 ## vimtmpl (CLI)
 
