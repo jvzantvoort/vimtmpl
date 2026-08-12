@@ -106,9 +106,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := generate.OpenEditor(cfg.FullPath); err != nil {
-		log.Error(err)
-		os.Exit(1)
+	// ExecEditor replaces this process with the editor outright (like a
+	// shell's "exec"); it only returns on platforms where that isn't
+	// possible (e.g. Windows), in which case we fall back to spawning it.
+	if err := generate.ExecEditor(cfg.FullPath); err != nil {
+		log.Debugf("exec editor failed, falling back to subprocess: %s", err)
+		if err := generate.OpenEditor(cfg.FullPath); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
 	}
 
 }
