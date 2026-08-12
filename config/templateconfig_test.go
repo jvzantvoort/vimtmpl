@@ -20,20 +20,23 @@ func TestNewTemplateConfig(t *testing.T) {
 	if tc.Stdout {
 		t.Errorf("expected Stdout to default to false")
 	}
-	if tc.Company != "company" {
-		t.Errorf("got Company %q want %q", tc.Company, "company")
+	if tc.Company != "Company Name" {
+		t.Errorf("got Company %q want %q", tc.Company, "Company Name")
 	}
-	if tc.Copyright != "copyright" {
-		t.Errorf("got Copyright %q want %q", tc.Copyright, "copyright")
+	if tc.Copyright != "Copyright holder name" {
+		t.Errorf("got Copyright %q want %q", tc.Copyright, "Copyright holder name")
 	}
 	if tc.License != "license" {
 		t.Errorf("got License %q want %q", tc.License, "license")
 	}
-	if tc.MailAddress != "mailaddress" {
-		t.Errorf("got MailAddress %q want %q", tc.MailAddress, "mailaddress")
+	if tc.MailAddress != "My Mail Address" {
+		t.Errorf("got MailAddress %q want %q", tc.MailAddress, "My Mail Address")
 	}
-	if tc.UserName != "username" {
-		t.Errorf("got UserName %q want %q", tc.UserName, "username")
+	if tc.UserName != "Full User Name" {
+		t.Errorf("got UserName %q want %q", tc.UserName, "Full User Name")
+	}
+	if tc.Mode != 0644 {
+		t.Errorf("got Mode %o want %o", tc.Mode, 0644)
 	}
 	if tc.Date == "" {
 		t.Errorf("expected Date to be populated")
