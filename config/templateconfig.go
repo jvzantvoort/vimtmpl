@@ -41,6 +41,9 @@ type TemplateConfig struct {
 	Title       string
 	Description string
 
+	// mode default definition
+	Mode        int
+
 	// time strings
 	Date string
 	Year string
@@ -60,11 +63,13 @@ func NewTemplateConfig(lang string) *TemplateConfig {
 	retv.Lang = lang
 	retv.Stdout = false
 
-	retv.Company = "company"
-	retv.Copyright = "copyright"
+	retv.Company = "Company Name"
+	retv.Copyright = "Copyright holder name"
 	retv.License = "license"
-	retv.MailAddress = "mailaddress"
-	retv.UserName = "username"
+	retv.MailAddress = "My Mail Address"
+	retv.UserName = "Full User Name"
+
+	retv.Mode = 0644
 
 	// add timestamps
 	timest := time.Now()
@@ -184,13 +189,16 @@ func (tc TemplateConfig) GetItem(name string) *TemplateItem {
 
 func (tc TemplateConfig) SaveTo(filename string) error {
 
+	ini.DefaultHeader = true // force writing "[DEFAULT]" header
+
 	cfg := ini.Empty()
-	cfg.Section("").Key("company").SetValue(tc.Company)
-	cfg.Section("").Key("copyright").SetValue(tc.Copyright)
-	cfg.Section("").Key("license").SetValue(tc.License)
-	cfg.Section("").Key("mailaddress").SetValue(tc.MailAddress)
-	cfg.Section("").Key("username").SetValue(tc.UserName)
-	cfg.Section("").Key("user").SetValue(tc.User)
+	cfg.Section("DEFAULT").Key("company").SetValue(tc.Company)
+	cfg.Section("DEFAULT").Key("copyright").SetValue(tc.Copyright)
+	cfg.Section("DEFAULT").Key("license").SetValue(tc.License)
+	cfg.Section("DEFAULT").Key("mailaddress").SetValue(tc.MailAddress)
+	cfg.Section("DEFAULT").Key("username").SetValue(tc.UserName)
+	cfg.Section("DEFAULT").Key("user").SetValue(tc.User)
+	cfg.Section("DEFAULT").Key("mode").SetValue(fmt.Sprintf("%d", tc.Mode))
 
 	for _, obj := range tc.Items {
 		sec, err := cfg.NewSection(obj.Name)
