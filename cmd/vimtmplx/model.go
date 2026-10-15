@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/jvzantvoort/vimtmpl/config"
 	"github.com/jvzantvoort/vimtmpl/generate"
@@ -86,7 +86,7 @@ func newModel(prefill string) model {
 	ti := textinput.New()
 	ti.Placeholder = "output filename, e.g. deploy.sh"
 	ti.CharLimit = 512
-	ti.Width = 40
+	ti.SetWidth(40)
 	if prefill != "" {
 		ti.SetValue(prefill)
 	}
@@ -137,7 +137,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width, m.height = msg.Width, msg.Height
 		return m, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
 			m.quitting = true
@@ -179,7 +179,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.switchIdx < len(m.switches)-1 {
 					m.switchIdx++
 				}
-			case " ", "enter":
+			case "space", "enter":
 				if len(m.switches) > 0 {
 					m.switches[m.switchIdx].Enabled = !m.switches[m.switchIdx].Enabled
 				}
@@ -281,9 +281,9 @@ func (m model) generate() (tea.Model, tea.Cmd) {
 	})
 }
 
-func (m model) View() string {
+func (m model) View() tea.View {
 	if m.quitting {
-		return ""
+		return tea.NewView("")
 	}
 
 	var b strings.Builder
@@ -342,5 +342,7 @@ func (m model) View() string {
 
 	b.WriteString(helpStyle.Render("tab: next field  ·  ←/→: template  ·  space: toggle switch  ·  ctrl+s: generate  ·  esc: quit"))
 
-	return b.String()
+	v := tea.NewView(b.String())
+	v.AltScreen = true
+	return v
 }

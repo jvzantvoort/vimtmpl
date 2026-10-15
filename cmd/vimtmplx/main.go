@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 var (
@@ -24,7 +24,7 @@ func main() {
 		}
 	}
 
-	p := tea.NewProgram(newModel(opts.Filename), tea.WithAltScreen())
+	p := tea.NewProgram(newModel(opts.Filename))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "vimtmplx: %s\n", err)
 		os.Exit(1)
