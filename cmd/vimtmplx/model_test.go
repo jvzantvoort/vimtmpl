@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	tea "charm.land/bubbletea/v2"
 )
 
 func installTemplateFixture(t *testing.T, home, name, content string) {
@@ -135,5 +137,34 @@ func TestCycleLangWrapsAndReloadsSwitches(t *testing.T) {
 	m.cycleLang(1)
 	if m.langIdx != 0 {
 		t.Errorf("expected wrap back to 0, got %d", m.langIdx)
+	}
+}
+
+func TestUpdateKeysNavigateAndToggleSwitch(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	installTemplateFixture(t, home, "bash", "---\n[switches]\nsafe = Enable safety switches\n---\nbody\n")
+
+	press := func(m model, k tea.Key) model {
+		t.Helper()
+		updated, _ := m.Update(tea.KeyPressMsg(k))
+		return updated.(model)
+	}
+
+	m := newModel("")
+	m = press(m, tea.Key{Code: tea.KeyTab})
+	m = press(m, tea.Key{Code: tea.KeyTab})
+	if m.focus != fieldSwitches {
+		t.Fatalf("expected focus on switches after two tabs, got %d", m.focus)
+	}
+
+	m = press(m, tea.Key{Code: tea.KeySpace, Text: " "})
+	if !m.switches[0].Enabled {
+		t.Errorf("expected space to enable the focused switch")
+	}
+
+	m = press(m, tea.Key{Code: tea.KeyTab, Mod: tea.ModShift})
+	if m.focus != fieldTemplate {
+		t.Errorf("expected shift+tab to move focus back to template, got %d", m.focus)
 	}
 }
