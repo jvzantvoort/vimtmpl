@@ -7,8 +7,8 @@ import (
 
 	"time"
 
-	"github.com/go-ini/ini"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/ini.v1"
 )
 
 const ConfigFilename string = ".template.cfg"
@@ -42,7 +42,7 @@ type TemplateConfig struct {
 	Description string
 
 	// mode default definition
-	Mode        int
+	Mode int
 
 	// time strings
 	Date string
