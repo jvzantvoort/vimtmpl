@@ -4,15 +4,31 @@ on:
   push:
     tags:
       - 'vimtmpl-*'
+  workflow_call:
+    inputs:
+      tag:
+        description: Tag to build and release
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to (re)build and release, e.g. vimtmpl-2.4.0
+        required: true
+        type: string
 
 permissions:
   contents: write
-  packages: write
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
-  release:
-    name: Release vimtmpl
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         goos: [linux, darwin]
@@ -22,6 +38,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: refs/tags/${{ env.TAG }}
           fetch-depth: 0
 
       - name: Set up Go
@@ -35,26 +52,54 @@ jobs:
 
       - name: Build
         run: |
-          ./build.sh buildr ${{ matrix.goos }} ${{ matrix.goarch }} $GITHUB_WORKSPACE/build
+          ./build.sh buildr ${{ matrix.goos }} ${{ matrix.goarch }} "$GITHUB_WORKSPACE/build"
 
       - name: Create package
-        id: package
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          PACKAGE_NAME=vimtmpl-${VERSION#vimtmpl-}.${{ matrix.goos }}.${{ matrix.goarch }}.tar.gz
-          tar -czvf $PACKAGE_NAME -C build/${{ matrix.goos }}.${{ matrix.goarch }} .
-          echo "name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          PACKAGE_NAME="vimtmpl-${TAG#vimtmpl-}.${{ matrix.goos }}.${{ matrix.goarch }}.tar.gz"
+          mkdir -p dist
+          tar -czvf "dist/${PACKAGE_NAME}" -C "build/${{ matrix.goos }}.${{ matrix.goarch }}" .
+          (cd dist && sha256sum "${PACKAGE_NAME}" >"${PACKAGE_NAME}.sha256")
 
-      - name: Generate checksum
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: package-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          retention-days: 1
+
+  publish:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v7
+        with:
+          pattern: package-*
+          merge-multiple: true
+          path: dist
+
+      - name: Compose release notes
         run: |
-          sha256sum ${{ steps.package.outputs.name }} > ${{ steps.package.outputs.name }}.sha256
+          URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          PKG="vimtmpl-${TAG#vimtmpl-}.linux.amd64.tar.gz"
+          cat >notes.md <<EOF
+          ## Download
 
-      - name: Upload release assets
+          **Linux amd64:** [${PKG}](${URL}/${PKG}) ([sha256](${URL}/${PKG}.sha256))
+
+          \`\`\`sh
+          curl -fsSLO ${URL}/${PKG}
+          \`\`\`
+          EOF
+          cat notes.md
+
+      - name: Create release
         uses: softprops/action-gh-release@v3
         with:
-          files: |
-            ${{ steps.package.outputs.name }}
-            ${{ steps.package.outputs.name }}.sha256
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ env.TAG }}
+          name: ${{ env.TAG }}
+          body_path: notes.md
+          generate_release_notes: true
+          files: dist/*
