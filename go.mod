@@ -1,13 +1,13 @@
 module github.com/jvzantvoort/vimtmpl
 
-go 1.26.0
+go 1.26.7
 
 toolchain go1.26.9
 
 require (
 	charm.land/bubbles/v2 v2.2.1
 	charm.land/bubbletea/v2 v2.1.1
-	charm.land/lipgloss/v2 v2.0.6
+	charm.land/lipgloss/v2 v2.1.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/pflag v1.0.10
